@@ -119,11 +119,11 @@ flowchart TB
     MAJORITY -.-> FENCE
     
     %% Styling
-    classDef primary fill:#e1f5fe,stroke:#01579b,stroke-width:2px
-    classDef dr fill:#fff3e0,stroke:#e65100,stroke-width:2px
-    classDef app fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
-    classDef storage fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
-    classDef fence fill:#ffebee,stroke:#b71c1c,stroke-width:2px
+    classDef primary fill:#1976d2,stroke:#ffffff,stroke-width:3px,color:#ffffff
+    classDef dr fill:#f57c00,stroke:#ffffff,stroke-width:3px,color:#ffffff
+    classDef app fill:#7b1fa2,stroke:#ffffff,stroke-width:3px,color:#ffffff
+    classDef storage fill:#388e3c,stroke:#ffffff,stroke-width:3px,color:#ffffff
+    classDef fence fill:#d32f2f,stroke:#ffffff,stroke-width:3px,color:#ffffff
     
     class COORD1,WORKER1,LB1 primary
     class COORD2,WORKER2,LB2 primary
