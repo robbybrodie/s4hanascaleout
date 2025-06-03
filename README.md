@@ -258,6 +258,17 @@ graph TB
     COORD2_ANGI -.-> COORD2_PORTBLOCK
     WORKER2_ANGI -.-> WORKER2_PORTBLOCK
     
+    %% Styling for better readability
+    classDef clusterNode fill:#1976d2,stroke:#ffffff,stroke-width:3px,color:#ffffff
+    classDef externalSystem fill:#388e3c,stroke:#ffffff,stroke-width:3px,color:#ffffff
+    classDef fenceSystem fill:#d32f2f,stroke:#ffffff,stroke-width:3px,color:#ffffff
+    classDef nftSystem fill:#f57c00,stroke:#ffffff,stroke-width:3px,color:#ffffff
+    
+    class MAJORITY_NODE,COORD1_NODE,WORKER1_NODE,COORD2_NODE,WORKER2_NODE clusterNode
+    class AWS_SG,LB_VIP externalSystem
+    class MAJORITY_FENCE,COORD1_FENCE,WORKER1_FENCE,COORD2_FENCE,WORKER2_FENCE fenceSystem
+    class NFT_COORD1,NFT_WORKER1,NFT_COORD2,NFT_WORKER2 nftSystem
+    
     %% Hide empty spacers
     style EMPTY1 fill:transparent,stroke:transparent
     style EMPTY2 fill:transparent,stroke:transparent
