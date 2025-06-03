@@ -170,14 +170,12 @@ graph TD
     subgraph CLUSTER["Pacemaker Cluster - Spans All 3 AZs"]
         subgraph AZ1_NODES["AZ1 Cluster Nodes"]
             subgraph COORD1_NODE["HANA Coordinator Node - RHEL 8.8"]
-                COORD1_HANA["HANA Coordinator"]
                 COORD1_ANGI["ANGI SPA Agent"]
                 COORD1_PORTBLOCK["Portblock Agent"]
                 COORD1_FENCE["fence_aws_vpc_net"]
             end
             
             subgraph WORKER1_NODE["HANA Worker Node - RHEL 8.8"]
-                WORKER1_HANA["HANA Worker"]
                 WORKER1_ANGI["ANGI SPA Agent"]
                 WORKER1_PORTBLOCK["Portblock Agent"]
                 WORKER1_FENCE["fence_aws_vpc_net"]
@@ -186,14 +184,12 @@ graph TD
         
         subgraph AZ2_NODES["AZ2 Cluster Nodes"]
             subgraph COORD2_NODE["HANA Coordinator Node - RHEL 8.8"]
-                COORD2_HANA["HANA Coordinator"]
                 COORD2_ANGI["ANGI SPA Agent"]
                 COORD2_PORTBLOCK["Portblock Agent"]
                 COORD2_FENCE["fence_aws_vpc_net"]
             end
             
             subgraph WORKER2_NODE["HANA Worker Node - RHEL 8.8"]
-                WORKER2_HANA["HANA Worker"]
                 WORKER2_ANGI["ANGI SPA Agent"]
                 WORKER2_PORTBLOCK["Portblock Agent"]
                 WORKER2_FENCE["fence_aws_vpc_net"]
@@ -202,7 +198,6 @@ graph TD
         
         subgraph AZ3_NODES["AZ3 Cluster Node"]
             subgraph MAJORITY_NODE["Majority Maker Node - RHEL 8.8"]
-                MAJORITY_PACEMAKER["Pacemaker Quorum"]
                 MAJORITY_FENCE["fence_aws_vpc_net"]
             end
         end
@@ -210,8 +205,10 @@ graph TD
     
     %% External systems that agents control
     subgraph EXTERNAL["External Systems"]
-        NFT1["NFTables Rules AZ1"]
-        NFT2["NFTables Rules AZ2"]
+        NFT_COORD1["NFTables Rules Coord1"]
+        NFT_WORKER1["NFTables Rules Worker1"]
+        NFT_COORD2["NFTables Rules Coord2"]
+        NFT_WORKER2["NFTables Rules Worker2"]
         AWS_SG["AWS Security Groups"]
         LB_VIP["Load Balancer VIPs"]
     end
@@ -227,10 +224,10 @@ graph TD
     WORKER2_NODE -.-> MAJORITY_NODE
     
     %% Agent control relationships
-    COORD1_PORTBLOCK --> NFT1
-    WORKER1_PORTBLOCK --> NFT1
-    COORD2_PORTBLOCK --> NFT2
-    WORKER2_PORTBLOCK --> NFT2
+    COORD1_PORTBLOCK --> NFT_COORD1
+    WORKER1_PORTBLOCK --> NFT_WORKER1
+    COORD2_PORTBLOCK --> NFT_COORD2
+    WORKER2_PORTBLOCK --> NFT_WORKER2
     
     COORD1_FENCE --> AWS_SG
     WORKER1_FENCE --> AWS_SG
