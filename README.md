@@ -169,46 +169,83 @@ The custom Portblock resource agent solves this by:
 graph TD
     subgraph CLUSTER["Pacemaker Cluster - Spans All 3 AZs"]
         subgraph AZ1_NODES["AZ1 Cluster Nodes"]
-            COORD1["HANA Coordinator<br/>ANGI SPA + Portblock"]
-            WORKER1["HANA Worker<br/>ANGI SPA + Portblock"]
-            PB1["NFTables<br/>Host Isolation"]
+            subgraph COORD1_NODE["HANA Coordinator Node - RHEL 8.8"]
+                COORD1_HANA["HANA Coordinator"]
+                COORD1_ANGI["ANGI SPA Agent"]
+                COORD1_PORTBLOCK["Portblock Agent"]
+                COORD1_FENCE["fence_aws_vpc_net"]
+            end
+            
+            subgraph WORKER1_NODE["HANA Worker Node - RHEL 8.8"]
+                WORKER1_HANA["HANA Worker"]
+                WORKER1_ANGI["ANGI SPA Agent"]
+                WORKER1_PORTBLOCK["Portblock Agent"]
+                WORKER1_FENCE["fence_aws_vpc_net"]
+            end
         end
         
         subgraph AZ2_NODES["AZ2 Cluster Nodes"]
-            COORD2["HANA Coordinator<br/>ANGI SPA + Portblock"]
-            WORKER2["HANA Worker<br/>ANGI SPA + Portblock"]
-            PB2["NFTables<br/>Host Isolation"]
+            subgraph COORD2_NODE["HANA Coordinator Node - RHEL 8.8"]
+                COORD2_HANA["HANA Coordinator"]
+                COORD2_ANGI["ANGI SPA Agent"]
+                COORD2_PORTBLOCK["Portblock Agent"]
+                COORD2_FENCE["fence_aws_vpc_net"]
+            end
+            
+            subgraph WORKER2_NODE["HANA Worker Node - RHEL 8.8"]
+                WORKER2_HANA["HANA Worker"]
+                WORKER2_ANGI["ANGI SPA Agent"]
+                WORKER2_PORTBLOCK["Portblock Agent"]
+                WORKER2_FENCE["fence_aws_vpc_net"]
+            end
         end
         
         subgraph AZ3_NODES["AZ3 Cluster Node"]
-            MAJORITY["Majority Maker<br/>Quorum Provider"]
+            subgraph MAJORITY_NODE["Majority Maker Node - RHEL 8.8"]
+                MAJORITY_PACEMAKER["Pacemaker Quorum"]
+                MAJORITY_FENCE["fence_aws_vpc_net"]
+            end
         end
-        
-        AWS_FENCE["fence_aws_vpc_net<br/>AWS Backplane Fencing"]
     end
     
-    %% Cluster membership - all nodes part of same cluster
-    COORD1 -.-> COORD2
-    COORD1 -.-> WORKER2
-    WORKER1 -.-> COORD2
-    WORKER1 -.-> WORKER2
-    COORD1 -.-> MAJORITY
-    WORKER1 -.-> MAJORITY
-    COORD2 -.-> MAJORITY
-    WORKER2 -.-> MAJORITY
+    %% External systems that agents control
+    subgraph EXTERNAL["External Systems"]
+        NFT1["NFTables Rules AZ1"]
+        NFT2["NFTables Rules AZ2"]
+        AWS_SG["AWS Security Groups"]
+        LB_VIP["Load Balancer VIPs"]
+    end
     
-    %% Portblock agents control local NFTables
-    COORD1 --> PB1
-    WORKER1 --> PB1
-    COORD2 --> PB2
-    WORKER2 --> PB2
+    %% Cluster communication
+    COORD1_NODE -.-> COORD2_NODE
+    COORD1_NODE -.-> WORKER2_NODE
+    WORKER1_NODE -.-> COORD2_NODE
+    WORKER1_NODE -.-> WORKER2_NODE
+    COORD1_NODE -.-> MAJORITY_NODE
+    WORKER1_NODE -.-> MAJORITY_NODE
+    COORD2_NODE -.-> MAJORITY_NODE
+    WORKER2_NODE -.-> MAJORITY_NODE
     
-    %% All cluster nodes use AWS fencing
-    COORD1 -.-> AWS_FENCE
-    WORKER1 -.-> AWS_FENCE
-    COORD2 -.-> AWS_FENCE
-    WORKER2 -.-> AWS_FENCE
-    MAJORITY -.-> AWS_FENCE
+    %% Agent control relationships
+    COORD1_PORTBLOCK --> NFT1
+    WORKER1_PORTBLOCK --> NFT1
+    COORD2_PORTBLOCK --> NFT2
+    WORKER2_PORTBLOCK --> NFT2
+    
+    COORD1_FENCE --> AWS_SG
+    WORKER1_FENCE --> AWS_SG
+    COORD2_FENCE --> AWS_SG
+    WORKER2_FENCE --> AWS_SG
+    MAJORITY_FENCE --> AWS_SG
+    
+    COORD1_ANGI --> LB_VIP
+    COORD2_ANGI --> LB_VIP
+    
+    %% ANGI can trigger Portblock
+    COORD1_ANGI -.-> COORD1_PORTBLOCK
+    COORD1_ANGI -.-> WORKER1_PORTBLOCK
+    COORD2_ANGI -.-> COORD2_PORTBLOCK
+    COORD2_ANGI -.-> WORKER2_PORTBLOCK
 ```
 
 ## Key Features
