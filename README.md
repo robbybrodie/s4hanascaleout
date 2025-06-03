@@ -166,43 +166,55 @@ The custom Portblock resource agent solves this by:
 - **Integration with Pacemaker** resource management
 
 ```mermaid
-graph LR
+graph TB
     subgraph CLUSTER["Pacemaker Cluster - Spans All 3 AZs"]
-        subgraph AZ1_NODES["AZ1 Cluster Nodes"]
-            subgraph COORD1_NODE["HANA Coordinator Node - RHEL 8.8"]
-                COORD1_ANGI["ANGI SPA Agent"]
-                COORD1_PORTBLOCK["Portblock Agent"]
-                COORD1_FENCE["fence_aws_vpc_net"]
+        subgraph ROW1[" "]
+            subgraph AZ3_NODES["AZ3 Cluster Node"]
+                subgraph MAJORITY_NODE["Majority Maker Node - RHEL 8.8"]
+                    MAJORITY_FENCE["fence_aws_vpc_net"]
+                end
             end
             
-            subgraph WORKER1_NODE["HANA Worker Node - RHEL 8.8"]
-                WORKER1_ANGI["ANGI SPA Agent"]
-                WORKER1_PORTBLOCK["Portblock Agent"]
-                WORKER1_FENCE["fence_aws_vpc_net"]
-            end
-        end
-        
-        subgraph AZ2_NODES["AZ2 Cluster Nodes"]
-            subgraph COORD2_NODE["HANA Coordinator Node - RHEL 8.8"]
-                COORD2_ANGI["ANGI SPA Agent"]
-                COORD2_PORTBLOCK["Portblock Agent"]
-                COORD2_FENCE["fence_aws_vpc_net"]
+            subgraph SPACER1[" "]
+                EMPTY1[" "]
             end
             
-            subgraph WORKER2_NODE["HANA Worker Node - RHEL 8.8"]
-                WORKER2_ANGI["ANGI SPA Agent"]
-                WORKER2_PORTBLOCK["Portblock Agent"]
-                WORKER2_FENCE["fence_aws_vpc_net"]
+            subgraph AZ1_NODES["AZ1 Cluster Nodes"]
+                subgraph COORD1_NODE["HANA Coordinator Node - RHEL 8.8"]
+                    COORD1_ANGI["ANGI SPA Agent"]
+                    COORD1_PORTBLOCK["Portblock Agent"]
+                    COORD1_FENCE["fence_aws_vpc_net"]
+                end
+                
+                subgraph WORKER1_NODE["HANA Worker Node - RHEL 8.8"]
+                    WORKER1_ANGI["ANGI SPA Agent"]
+                    WORKER1_PORTBLOCK["Portblock Agent"]
+                    WORKER1_FENCE["fence_aws_vpc_net"]
+                end
             end
         end
         
-        subgraph SPACER[" "]
-            EMPTY[" "]
-        end
-        
-        subgraph AZ3_NODES["AZ3 Cluster Node"]
-            subgraph MAJORITY_NODE["Majority Maker Node - RHEL 8.8"]
-                MAJORITY_FENCE["fence_aws_vpc_net"]
+        subgraph ROW2[" "]
+            subgraph SPACER2[" "]
+                EMPTY2[" "]
+            end
+            
+            subgraph SPACER3[" "]
+                EMPTY3[" "]
+            end
+            
+            subgraph AZ2_NODES["AZ2 Cluster Nodes"]
+                subgraph COORD2_NODE["HANA Coordinator Node - RHEL 8.8"]
+                    COORD2_ANGI["ANGI SPA Agent"]
+                    COORD2_PORTBLOCK["Portblock Agent"]
+                    COORD2_FENCE["fence_aws_vpc_net"]
+                end
+                
+                subgraph WORKER2_NODE["HANA Worker Node - RHEL 8.8"]
+                    WORKER2_ANGI["ANGI SPA Agent"]
+                    WORKER2_PORTBLOCK["Portblock Agent"]
+                    WORKER2_FENCE["fence_aws_vpc_net"]
+                end
             end
         end
     end
@@ -249,9 +261,15 @@ graph LR
     COORD2_ANGI -.-> COORD2_PORTBLOCK
     WORKER2_ANGI -.-> WORKER2_PORTBLOCK
     
-    %% Hide empty spacer
-    style EMPTY fill:transparent,stroke:transparent
-    style SPACER fill:transparent,stroke:transparent
+    %% Hide empty spacers
+    style EMPTY1 fill:transparent,stroke:transparent
+    style EMPTY2 fill:transparent,stroke:transparent
+    style EMPTY3 fill:transparent,stroke:transparent
+    style SPACER1 fill:transparent,stroke:transparent
+    style SPACER2 fill:transparent,stroke:transparent
+    style SPACER3 fill:transparent,stroke:transparent
+    style ROW1 fill:transparent,stroke:transparent
+    style ROW2 fill:transparent,stroke:transparent
 ```
 
 ## Key Features
