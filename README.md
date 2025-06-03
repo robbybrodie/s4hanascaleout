@@ -243,11 +243,11 @@ graph LR
     COORD1_ANGI --> LB_VIP
     COORD2_ANGI --> LB_VIP
     
-    %% ANGI can trigger Portblock - within AZ coordination
+    %% ANGI can trigger Portblock - only on same node
     COORD1_ANGI -.-> COORD1_PORTBLOCK
-    COORD1_ANGI -.-> WORKER1_PORTBLOCK
+    WORKER1_ANGI -.-> WORKER1_PORTBLOCK
     COORD2_ANGI -.-> COORD2_PORTBLOCK
-    COORD2_ANGI -.-> WORKER2_PORTBLOCK
+    WORKER2_ANGI -.-> WORKER2_PORTBLOCK
     
     %% Hide empty spacer
     style EMPTY fill:transparent,stroke:transparent
