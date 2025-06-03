@@ -166,7 +166,7 @@ The custom Portblock resource agent solves this by:
 - **Integration with Pacemaker** resource management
 
 ```mermaid
-graph TD
+graph LR
     subgraph CLUSTER["Pacemaker Cluster - Spans All 3 AZs"]
         subgraph AZ1_NODES["AZ1 Cluster Nodes"]
             subgraph COORD1_NODE["HANA Coordinator Node - RHEL 8.8"]
@@ -196,6 +196,10 @@ graph TD
             end
         end
         
+        subgraph SPACER[" "]
+            EMPTY[" "]
+        end
+        
         subgraph AZ3_NODES["AZ3 Cluster Node"]
             subgraph MAJORITY_NODE["Majority Maker Node - RHEL 8.8"]
                 MAJORITY_FENCE["fence_aws_vpc_net"]
@@ -205,25 +209,26 @@ graph TD
     
     %% External systems that agents control
     subgraph EXTERNAL["External Systems"]
-        NFT_COORD1["NFTables Rules Coord1"]
-        NFT_WORKER1["NFTables Rules Worker1"]
-        NFT_COORD2["NFTables Rules Coord2"]
-        NFT_WORKER2["NFTables Rules Worker2"]
+        subgraph NFT_SYSTEMS["NFTables Rules"]
+            NFT_COORD1["Coord1 NFTables"]
+            NFT_WORKER1["Worker1 NFTables"]
+            NFT_COORD2["Coord2 NFTables"]
+            NFT_WORKER2["Worker2 NFTables"]
+        end
+        
         AWS_SG["AWS Security Groups"]
         LB_VIP["Load Balancer VIPs"]
     end
     
     %% Cluster communication
     COORD1_NODE -.-> COORD2_NODE
-    COORD1_NODE -.-> WORKER2_NODE
-    WORKER1_NODE -.-> COORD2_NODE
     WORKER1_NODE -.-> WORKER2_NODE
     COORD1_NODE -.-> MAJORITY_NODE
-    WORKER1_NODE -.-> MAJORITY_NODE
     COORD2_NODE -.-> MAJORITY_NODE
+    WORKER1_NODE -.-> MAJORITY_NODE
     WORKER2_NODE -.-> MAJORITY_NODE
     
-    %% Agent control relationships
+    %% Agent control relationships - organized to minimize crossings
     COORD1_PORTBLOCK --> NFT_COORD1
     WORKER1_PORTBLOCK --> NFT_WORKER1
     COORD2_PORTBLOCK --> NFT_COORD2
@@ -238,11 +243,15 @@ graph TD
     COORD1_ANGI --> LB_VIP
     COORD2_ANGI --> LB_VIP
     
-    %% ANGI can trigger Portblock
+    %% ANGI can trigger Portblock - within AZ coordination
     COORD1_ANGI -.-> COORD1_PORTBLOCK
     COORD1_ANGI -.-> WORKER1_PORTBLOCK
     COORD2_ANGI -.-> COORD2_PORTBLOCK
     COORD2_ANGI -.-> WORKER2_PORTBLOCK
+    
+    %% Hide empty spacer
+    style EMPTY fill:transparent,stroke:transparent
+    style SPACER fill:transparent,stroke:transparent
 ```
 
 ## Key Features
