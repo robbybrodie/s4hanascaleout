@@ -166,81 +166,50 @@ The custom Portblock resource agent solves this by:
 - **Integration with Pacemaker** resource management
 
 ```mermaid
-flowchart TB
-    subgraph CLUSTER["Pacemaker Cluster"]
-        subgraph AZ1_CLUSTER["AZ1 Cluster Nodes"]
-            COORD1_PCM["HANA Coordinator<br/>Pacemaker Node<br/>ANGI SPA Agent<br/>Portblock Agent"]
-            WORKER1_PCM["HANA Worker<br/>Pacemaker Node<br/>ANGI SPA Agent<br/>Portblock Agent"]
-        end
-        
-        subgraph AZ2_CLUSTER["AZ2 Cluster Nodes"]
-            COORD2_PCM["HANA Coordinator<br/>Pacemaker Node<br/>ANGI SPA Agent<br/>Portblock Agent"]
-            WORKER2_PCM["HANA Worker<br/>Pacemaker Node<br/>ANGI SPA Agent<br/>Portblock Agent"]
-        end
-        
-        subgraph AZ3_CLUSTER["AZ3 Cluster Node"]
-            MAJORITY_PCM["Majority Maker<br/>Pacemaker Node<br/>Quorum Provider"]
-        end
-        
-        subgraph FENCING["Fencing Mechanisms"]
-            FENCE_AWS["fence_aws_vpc_net<br/>AWS Backplane Fencing"]
-            PORTBLOCK["Portblock Resource Agent<br/>NFTables VPC Isolation"]
-        end
-        
-        subgraph RESOURCES["Cluster Resources"]
-            ANGI_SPA["ANGI SPA Resource Agent<br/>HANA Management"]
-            HSR["HANA System Replication<br/>Resource Management"]
-            VIP["Virtual IP Resources<br/>Load Balancer Integration"]
-        end
+graph TD
+    subgraph AZ1["AZ1 - Pacemaker Cluster Nodes"]
+        COORD1["HANA Coordinator<br/>+ ANGI SPA Agent<br/>+ Portblock Agent"]
+        WORKER1["HANA Worker<br/>+ ANGI SPA Agent<br/>+ Portblock Agent"]
     end
     
-    %% Cluster communication
-    COORD1_PCM <-.-> COORD2_PCM
-    COORD1_PCM <-.-> WORKER2_PCM
-    WORKER1_PCM <-.-> COORD2_PCM
-    WORKER1_PCM <-.-> WORKER2_PCM
+    subgraph AZ2["AZ2 - Pacemaker Cluster Nodes"]
+        COORD2["HANA Coordinator<br/>+ ANGI SPA Agent<br/>+ Portblock Agent"]
+        WORKER2["HANA Worker<br/>+ ANGI SPA Agent<br/>+ Portblock Agent"]
+    end
     
-    %% Majority maker connections
-    COORD1_PCM <-.-> MAJORITY_PCM
-    WORKER1_PCM <-.-> MAJORITY_PCM
-    COORD2_PCM <-.-> MAJORITY_PCM
-    WORKER2_PCM <-.-> MAJORITY_PCM
+    subgraph AZ3["AZ3 - Majority Maker"]
+        MAJORITY["Majority Maker<br/>Quorum Provider"]
+    end
     
-    %% Fencing relationships
-    COORD1_PCM -.-> FENCE_AWS
-    WORKER1_PCM -.-> FENCE_AWS
-    COORD2_PCM -.-> FENCE_AWS
-    WORKER2_PCM -.-> FENCE_AWS
-    MAJORITY_PCM -.-> FENCE_AWS
+    subgraph FENCE["Fencing & Isolation"]
+        AWS_FENCE["fence_aws_vpc_net<br/>AWS Backplane"]
+        PORTBLOCK["Portblock Agent<br/>NFTables VPC Isolation"]
+    end
+    
+    %% Cluster communication lines
+    COORD1 -.-> COORD2
+    WORKER1 -.-> WORKER2
+    COORD1 -.-> WORKER2
+    WORKER1 -.-> COORD2
+    
+    %% Majority maker quorum
+    COORD1 -.-> MAJORITY
+    WORKER1 -.-> MAJORITY
+    COORD2 -.-> MAJORITY
+    WORKER2 -.-> MAJORITY
+    
+    %% Fencing connections
+    COORD1 --> AWS_FENCE
+    WORKER1 --> AWS_FENCE
+    COORD2 --> AWS_FENCE
+    WORKER2 --> AWS_FENCE
+    MAJORITY --> AWS_FENCE
     
     %% Portblock isolation
-    COORD1_PCM -.-> PORTBLOCK
-    WORKER1_PCM -.-> PORTBLOCK
-    COORD2_PCM -.-> PORTBLOCK
-    WORKER2_PCM -.-> PORTBLOCK
-    
-    %% Resource management
-    COORD1_PCM --> ANGI_SPA
-    WORKER1_PCM --> ANGI_SPA
-    COORD2_PCM --> ANGI_SPA
-    WORKER2_PCM --> ANGI_SPA
-    
-    COORD1_PCM --> HSR
-    COORD2_PCM --> HSR
-    
-    COORD1_PCM --> VIP
-    COORD2_PCM --> VIP
-    
-    %% Styling
-    classDef cluster fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
-    classDef fencing fill:#ffebee,stroke:#d32f2f,stroke-width:2px
-    classDef resource fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
-    classDef majority fill:#fff3e0,stroke:#f57c00,stroke-width:2px
-    
-    class COORD1_PCM,WORKER1_PCM,COORD2_PCM,WORKER2_PCM cluster
-    class MAJORITY_PCM majority
-    class FENCE_AWS,PORTBLOCK fencing
-    class ANGI_SPA,HSR,VIP resource
+    COORD1 --> PORTBLOCK
+    WORKER1 --> PORTBLOCK
+    COORD2 --> PORTBLOCK
+    WORKER2 --> PORTBLOCK
 ```
 
 ## Key Features
