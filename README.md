@@ -25,9 +25,9 @@ The architecture implements a sophisticated multi-tier approach combining high a
 - **Pacemaker clustering** manages automatic failover between sites
 - **AWS backplane fencing** using `fence_aws_vpc_net` (no SBD fencing)
 - **ANGI SPA resource agent** for HANA resource management
-- **Custom VPC isolation resource agent** using NFTables for split-brain prevention
+- **Custom host isolation resource agent** using NFTables for split-brain prevention
 - Majority maker node in AZ3 ensures proper quorum for split-brain prevention
-- **Portblock resource agent** provides VPC-level isolation to prevent partial site failures
+- **Portblock resource agent** provides host-level isolation to prevent partial site failures
 
 ### Network & Connectivity
 - **NetWeaver application servers** connect to database tier
@@ -135,13 +135,13 @@ flowchart TB
 
 ## Pacemaker Cluster Architecture
 
-The Pacemaker cluster manages the high availability aspects of the S4HANA deployment with sophisticated resource management and split-brain prevention mechanisms.
+The Pacemaker cluster is a unified cluster spanning all three AWS Availability Zones, managing the high availability aspects of the S4HANA deployment with sophisticated resource management and split-brain prevention mechanisms.
 
 ### Custom Portblock Resource Agent
 
 A critical innovation in this architecture is the custom **Portblock resource agent** that addresses a fundamental limitation in traditional SAP scale-out HA deployments. This resource agent:
 
-- **Uses NFTables** to provide VPC-level network isolation
+- **Uses NFTables** to provide host-level network isolation
 - **Prevents partial site failures** that could lead to split-brain scenarios
 - **Coordinates both nodes in an AZ** when one node fails or requires maintenance
 - **Addresses SAP scale-out limitations** where existing resource agents (including ANGI SPA) cannot alter the state of both nodes simultaneously
@@ -160,56 +160,55 @@ Traditional SAP scale-out architectures using Pacemaker for HA across two sites 
 ### Portblock Solution
 
 The custom Portblock resource agent solves this by:
-- **Immediate VPC isolation** using NFTables rules
+- **Immediate host isolation** using NFTables rules on the Linux host
 - **Coordinated shutdown** of entire AZ when any node fails
 - **Prevention of partial site operation** during failover windows
 - **Integration with Pacemaker** resource management
 
 ```mermaid
 graph TD
-    subgraph AZ1["AZ1 - Pacemaker Cluster Nodes"]
-        COORD1["HANA Coordinator<br/>+ ANGI SPA Agent<br/>+ Portblock Agent"]
-        WORKER1["HANA Worker<br/>+ ANGI SPA Agent<br/>+ Portblock Agent"]
+    subgraph CLUSTER["Pacemaker Cluster - Spans All 3 AZs"]
+        subgraph AZ1_NODES["AZ1 Cluster Nodes"]
+            COORD1["HANA Coordinator<br/>ANGI SPA + Portblock"]
+            WORKER1["HANA Worker<br/>ANGI SPA + Portblock"]
+            PB1["NFTables<br/>Host Isolation"]
+        end
+        
+        subgraph AZ2_NODES["AZ2 Cluster Nodes"]
+            COORD2["HANA Coordinator<br/>ANGI SPA + Portblock"]
+            WORKER2["HANA Worker<br/>ANGI SPA + Portblock"]
+            PB2["NFTables<br/>Host Isolation"]
+        end
+        
+        subgraph AZ3_NODES["AZ3 Cluster Node"]
+            MAJORITY["Majority Maker<br/>Quorum Provider"]
+        end
+        
+        AWS_FENCE["fence_aws_vpc_net<br/>AWS Backplane Fencing"]
     end
     
-    subgraph AZ2["AZ2 - Pacemaker Cluster Nodes"]
-        COORD2["HANA Coordinator<br/>+ ANGI SPA Agent<br/>+ Portblock Agent"]
-        WORKER2["HANA Worker<br/>+ ANGI SPA Agent<br/>+ Portblock Agent"]
-    end
-    
-    subgraph AZ3["AZ3 - Majority Maker"]
-        MAJORITY["Majority Maker<br/>Quorum Provider"]
-    end
-    
-    subgraph FENCE["Fencing & Isolation"]
-        AWS_FENCE["fence_aws_vpc_net<br/>AWS Backplane"]
-        PORTBLOCK["Portblock Agent<br/>NFTables VPC Isolation"]
-    end
-    
-    %% Cluster communication lines
+    %% Cluster membership - all nodes part of same cluster
     COORD1 -.-> COORD2
-    WORKER1 -.-> WORKER2
     COORD1 -.-> WORKER2
     WORKER1 -.-> COORD2
-    
-    %% Majority maker quorum
+    WORKER1 -.-> WORKER2
     COORD1 -.-> MAJORITY
     WORKER1 -.-> MAJORITY
     COORD2 -.-> MAJORITY
     WORKER2 -.-> MAJORITY
     
-    %% Fencing connections
-    COORD1 --> AWS_FENCE
-    WORKER1 --> AWS_FENCE
-    COORD2 --> AWS_FENCE
-    WORKER2 --> AWS_FENCE
-    MAJORITY --> AWS_FENCE
+    %% Portblock agents control local NFTables
+    COORD1 --> PB1
+    WORKER1 --> PB1
+    COORD2 --> PB2
+    WORKER2 --> PB2
     
-    %% Portblock isolation
-    COORD1 --> PORTBLOCK
-    WORKER1 --> PORTBLOCK
-    COORD2 --> PORTBLOCK
-    WORKER2 --> PORTBLOCK
+    %% All cluster nodes use AWS fencing
+    COORD1 -.-> AWS_FENCE
+    WORKER1 -.-> AWS_FENCE
+    COORD2 -.-> AWS_FENCE
+    WORKER2 -.-> AWS_FENCE
+    MAJORITY -.-> AWS_FENCE
 ```
 
 ## Key Features
@@ -221,14 +220,14 @@ graph TD
 - **AWS-native fencing** using fence_aws_vpc_net for reliable cluster operations
 - **Enterprise storage** with NetApp OnTAP on AWS
 - **Dynamic connection routing** via AWS Load Balancers
-- **Custom Portblock resource agent** for VPC-level isolation and split-brain prevention
+- **Custom Portblock resource agent** for host-level isolation and split-brain prevention
 
 ## Technology Stack
 
 - **Database**: SAP HANA (Scale-out configuration)
 - **Clustering**: Pacemaker with ANGI SPA resource agent
 - **Fencing**: fence_aws_vpc_net (AWS backplane fencing)
-- **Custom Resource Agent**: Portblock (NFTables-based VPC isolation)
+- **Custom Resource Agent**: Portblock (NFTables-based host isolation)
 - **Operating System**: Red Hat Enterprise Linux 8.8
 - **Compute**: AWS EC2 Superdome instances
 - **Storage**: NetApp OnTAP on AWS
@@ -243,8 +242,9 @@ graph TD
 - Direct database connections established after coordinator IP resolution
 - Backup servers in AZ3 provide additional recovery options
 - **Portblock resource agent addresses universal SAP scale-out HA limitation** affecting all two-site Pacemaker deployments
-- Custom NFTables rules provide immediate VPC isolation during node failures
+- Custom NFTables rules provide immediate host-level isolation during node failures
 - Coordinated site-level shutdown prevents partial site operation during failover
+- **Single Pacemaker cluster spans all three AZs** for unified resource management
 
 ## Contributing
 
