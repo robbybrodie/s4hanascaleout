@@ -219,6 +219,11 @@ graph TB
         end
     end
     
+    %% Vertical spacer for better readability
+    subgraph VERTICAL_SPACER[" "]
+        VERTICAL_EMPTY[" "]
+    end
+    
     %% External systems that agents control
     subgraph EXTERNAL["External Systems"]
         subgraph NFT_SYSTEMS["NFTables Rules"]
@@ -262,6 +267,8 @@ graph TB
     style SPACER3 fill:transparent,stroke:transparent
     style ROW1 fill:transparent,stroke:transparent
     style ROW2 fill:transparent,stroke:transparent
+    style VERTICAL_EMPTY fill:transparent,stroke:transparent
+    style VERTICAL_SPACER fill:transparent,stroke:transparent
 ```
 
 ## Key Features
