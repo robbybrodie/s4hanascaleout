@@ -232,15 +232,7 @@ graph TB
         LB_VIP["Load Balancer VIPs"]
     end
     
-    %% Cluster communication
-    COORD1_NODE -.-> COORD2_NODE
-    WORKER1_NODE -.-> WORKER2_NODE
-    COORD1_NODE -.-> MAJORITY_NODE
-    COORD2_NODE -.-> MAJORITY_NODE
-    WORKER1_NODE -.-> MAJORITY_NODE
-    WORKER2_NODE -.-> MAJORITY_NODE
-    
-    %% Agent control relationships - organized to minimize crossings
+    %% Agent control relationships - what each agent manages
     COORD1_PORTBLOCK --> NFT_COORD1
     WORKER1_PORTBLOCK --> NFT_WORKER1
     COORD2_PORTBLOCK --> NFT_COORD2
